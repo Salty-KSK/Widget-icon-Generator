@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Widget Icon Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Icon Generator</h1>
+            <p>ウィジェット用・カスタマイズアイコン作成ツール</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Step 1: Upload -->
+            <section id="step-upload" class="card fade-in active">
+                <div class="card-header">
+                    <h2>1. 画像を選択</h2>
+                    <p>ホーム画面のスクリーンショット、またはアイコンの画像を選択してください</p>
+                </div>
+                <div class="upload-area" id="drop-zone">
+                    <div class="upload-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    </div>
+                    <p class="upload-text">タップして画像を選択<br><span>またはドラッグ＆ドロップ</span></p>
+                    <input type="file" id="file-input" accept="image/png, image/jpeg, image/jpg" class="hidden-input">
+                </div>
+            </section>
+
+            <!-- Step 2: Crop -->
+            <section id="step-crop" class="card fade-in">
+                <div class="card-header">
+                    <h2>2. アイコンを切り抜き</h2>
+                    <p>アイコンが枠に収まるように調整してください</p>
+                </div>
+                <div class="crop-container">
+                    <img id="image-to-crop" src="" alt="クロップ対象">
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="btn-cancel-crop">選び直す</button>
+                    <button class="btn btn-primary" id="btn-confirm-crop">切り抜く</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Process & Preview -->
+            <section id="step-process" class="card fade-in">
+                <div class="card-header">
+                    <h2>3. 調整と保存</h2>
+                    <p>しきい値を調整し、アイコンの形を選んでください</p>
+                </div>
+                
+                <div class="preview-layout">
+                    <!-- プレビュー -->
+                    <div class="preview-container">
+                        <div class="preview-bg">
+                            <canvas id="preview-canvas" width="512" height="512"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- コントロール -->
+                    <div class="controls-container">
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="threshold">しきい値調整</label>
+                                <span id="threshold-val">128</span>
+                            </div>
+                            <input type="range" id="threshold" min="0" max="255" value="128" class="slider">
+                            <p class="control-hint">スライダーを動かして、ロゴが綺麗に表示される点を探してください</p>
+                        </div>
+
+                        <div class="control-group row">
+                            <label for="invert" class="toggle-label">色を反転 (白黒の切り替え)</label>
+                            <label class="switch">
+                                <input type="checkbox" id="invert">
+                                <span class="slider-toggle round"></span>
+                            </label>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="toggle-label">アイコンの形状</label>
+                            <div class="shape-selector">
+                                <label class="shape-option">
+                                    <input type="radio" name="shape" value="squircle" checked>
+                                    <div class="shape-preview squircle"></div>
+                                    <span>iOS丸角</span>
+                                </label>
+                                <label class="shape-option">
+                                    <input type="radio" name="shape" value="circle">
+                                    <div class="shape-preview circle"></div>
+                                    <span>丸型</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="btn-back-to-crop">戻る</button>
+                    <button class="btn btn-primary" id="btn-save">写真に保存 / ダウンロード</button>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <p>Generated by Antigravity</p>
+        </footer>
+    </div>
+
+    <!-- Hidden canvas for initial image processing -->
+    <canvas id="process-canvas" class="hidden" width="512" height="512"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
