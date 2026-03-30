@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSave: document.getElementById('btn-save'),
         processCanvas: document.getElementById('process-canvas'),
         previewCanvas: document.getElementById('preview-canvas'),
+        radiusSlider: document.getElementById('radius'),
+        radiusVal: document.getElementById('radius-val'),
+        radiusControlGroup: document.getElementById('radius-control-group'),
         invertToggle: document.getElementById('invert'),
         shapeRadios: document.querySelectorAll('input[name="shape"]'),
     };
@@ -122,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showStep(UI.stepCrop);
     });
 
+    UI.radiusSlider.addEventListener('input', (e) => {
+        UI.radiusVal.textContent = e.target.value + '%';
+        updatePreview();
+    });
+
     UI.invertToggle.addEventListener('change', updatePreview);
     
     UI.shapeRadios.forEach(radio => {
@@ -178,27 +186,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         procCtx.putImageData(outData, 0, 0);
 
+        // UI toggles
+        if (shape === 'squircle') {
+            UI.radiusControlGroup.style.display = 'flex';
+        } else {
+            UI.radiusControlGroup.style.display = 'none';
+        }
+
         // 2. Draw to preview canvas with masking
         ctx.clearRect(0, 0, width, height);
-        
-        // Draw the shape path
-        ctx.beginPath();
-        if (shape === 'squircle') {
-            const radius = width * 0.225; // iOS standard approximation
-            ctx.roundRect(0, 0, width, height, radius);
-        } else {
-            // Circle
-            ctx.arc(width/2, height/2, width/2, 0, Math.PI * 2);
-        }
-        ctx.closePath();
-        
-        // Fill base (in case image has transparency holes, though we filled them)
-        ctx.fillStyle = `rgb(${bgOut.r}, ${bgOut.g}, ${bgOut.b})`;
-        ctx.fill();
 
-        // Clip and draw processed image
         ctx.save();
-        ctx.clip();
+        if (shape !== 'square') {
+            ctx.beginPath();
+            if (shape === 'squircle') {
+                const radiusPct = parseFloat(UI.radiusSlider.value);
+                const radius = width * (radiusPct / 100);
+                ctx.roundRect(0, 0, width, height, radius);
+            } else if (shape === 'circle') {
+                ctx.arc(width/2, height/2, width/2, 0, Math.PI * 2);
+            }
+            ctx.closePath();
+            ctx.clip();
+        }
+
+        // Draw processed image directly
+        // Removing the manual background fill fixes the weird color borders on aliased edges
         ctx.drawImage(UI.processCanvas, 0, 0);
         ctx.restore();
     }

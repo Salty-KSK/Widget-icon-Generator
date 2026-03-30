@@ -63,6 +63,15 @@
 
                     <!-- コントロール -->
                     <div class="controls-container">
+                        <div class="control-group" id="radius-control-group">
+                            <div class="control-header">
+                                <label for="radius">角の丸み調整</label>
+                                <span id="radius-val">22.5%</span>
+                            </div>
+                            <input type="range" id="radius" min="0" max="50" step="0.5" value="22.5" class="slider">
+                            <p class="control-hint">iPhoneの丸みに完全に一致するようスライダーで微調整してください</p>
+                        </div>
+
                         <div class="control-group row">
                             <label for="invert" class="toggle-label">色を反転 (白黒の切り替え)</label>
                             <label class="switch">
@@ -83,6 +92,11 @@
                                     <input type="radio" name="shape" value="circle">
                                     <div class="shape-preview circle"></div>
                                     <span>丸型</span>
+                                </label>
+                                <label class="shape-option">
+                                    <input type="radio" name="shape" value="square">
+                                    <div class="shape-preview" style="border-radius: 4px;"></div>
+                                    <span>四角（そのまま）</span>
                                 </label>
                             </div>
                         </div>
