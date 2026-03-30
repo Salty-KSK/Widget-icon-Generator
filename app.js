@@ -13,8 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSave: document.getElementById('btn-save'),
         processCanvas: document.getElementById('process-canvas'),
         previewCanvas: document.getElementById('preview-canvas'),
-        thresholdSlider: document.getElementById('threshold'),
-        thresholdVal: document.getElementById('threshold-val'),
         invertToggle: document.getElementById('invert'),
         shapeRadios: document.querySelectorAll('input[name="shape"]'),
     };
@@ -124,11 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showStep(UI.stepCrop);
     });
 
-    UI.thresholdSlider.addEventListener('input', (e) => {
-        UI.thresholdVal.textContent = e.target.value;
-        updatePreview(); // Fast update
-    });
-
     UI.invertToggle.addEventListener('change', updatePreview);
     
     UI.shapeRadios.forEach(radio => {
@@ -138,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePreview() {
         if (!croppedImageData) return;
 
-        const threshold = parseInt(UI.thresholdSlider.value, 10);
         const invert = UI.invertToggle.checked;
         const shape = document.querySelector('input[name="shape"]:checked').value;
 
@@ -148,15 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Colors
         // C1: White background (#FFFFFF)
-        // C2: Charcoal Gray icon (#333333)
-        // By default, bright original pixels -> Background (White)
-        // Dark original pixels -> Icon (Charcoal)
-        // If invert is True, swap the output.
-        const colorWhite = {r: 255, g: 255, b: 255, a: 255};
-        const colorCharcoal = {r: 51, g: 51, b: 51, a: 255};
+        // C2: Black background for invert (#000000)
+        const colorWhite = {r: 255, g: 255, b: 255};
+        const colorBlack = {r: 0, g: 0, b: 0};
         
-        let bgOut = invert ? colorCharcoal : colorWhite;
-        let fgOut = invert ? colorWhite : colorCharcoal;
+        let bgOut = invert ? colorBlack : colorWhite;
 
         // 1. Process pixels into a temporary offscreen canvas (or reusing processCanvas)
         const procCtx = UI.processCanvas.getContext('2d');
@@ -171,28 +159,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Luminance formula
             const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
             
-            // Determine if pixel is background (higher lum) or foreground (lower lum)
-            // Wait, usually the icon logo is white (high lum) on a colored background.
-            // But sometimes the icon is dark on a white background.
-            // Using a simple threshold to binary.
-            
-            const isBright = luminance > threshold;
-            const targetColor = isBright ? colorWhite : colorCharcoal;
-            
-            // To make it flexible with the invert toggle:
-            let outC = isBright ? bgOut : fgOut;
+            // Grayscale or Inverted Grayscale
+            let outLum = invert ? (255 - luminance) : luminance;
             
             if (a < 50) {
-                // Keep purely transparent pixels (if the image had them, which screenshots don't)
+                // Keep purely transparent pixels
                 outData.data[i] = 255;
                 outData.data[i+1] = 255;
                 outData.data[i+2] = 255;
                 outData.data[i+3] = 0;
             } else {
-                outData.data[i] = outC.r;
-                outData.data[i+1] = outC.g;
-                outData.data[i+2] = outC.b;
-                outData.data[i+3] = outC.a;
+                outData.data[i] = outLum;
+                outData.data[i+1] = outLum;
+                outData.data[i+2] = outLum;
+                outData.data[i+3] = a;
             }
         }
         
