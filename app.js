@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         radiusSlider: document.getElementById('radius'),
         radiusVal: document.getElementById('radius-val'),
         radiusControlGroup: document.getElementById('radius-control-group'),
+        bgColorPicker: document.getElementById('bg-color'),
+        thresholdSlider: document.getElementById('threshold'),
+        thresholdVal: document.getElementById('threshold-val'),
         invertToggle: document.getElementById('invert'),
         shapeRadios: document.querySelectorAll('input[name="shape"]'),
     };
@@ -130,6 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePreview();
     });
 
+    UI.bgColorPicker.addEventListener('input', updatePreview);
+    
+    UI.thresholdSlider.addEventListener('input', (e) => {
+        UI.thresholdVal.textContent = e.target.value;
+        updatePreview();
+    });
+
     UI.invertToggle.addEventListener('change', updatePreview);
     
     UI.shapeRadios.forEach(radio => {
@@ -141,18 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const invert = UI.invertToggle.checked;
         const shape = document.querySelector('input[name="shape"]:checked').value;
+        const threshold = parseInt(UI.thresholdSlider.value, 10);
+        
+        // Background color parsing
+        const bgColorHex = UI.bgColorPicker.value;
+        const bgR = parseInt(bgColorHex.substr(1, 2), 16) || 224;
+        const bgG = parseInt(bgColorHex.substr(3, 2), 16) || 224;
+        const bgB = parseInt(bgColorHex.substr(5, 2), 16) || 224;
 
         const ctx = UI.previewCanvas.getContext('2d');
         const width = OUTPUT_SIZE;
         const height = OUTPUT_SIZE;
-
-        // Colors
-        // C1: White background (#FFFFFF)
-        // C2: Black background for invert (#000000)
-        const colorWhite = {r: 255, g: 255, b: 255};
-        const colorBlack = {r: 0, g: 0, b: 0};
-        
-        let bgOut = invert ? colorBlack : colorWhite;
 
         // 1. Process pixels into a temporary offscreen canvas (or reusing processCanvas)
         const procCtx = UI.processCanvas.getContext('2d');
@@ -167,20 +176,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // Luminance formula
             const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
             
-            // Grayscale or Inverted Grayscale
-            let outLum = invert ? (255 - luminance) : luminance;
+            const isBright = luminance > threshold;
+            // When invert is checked, darker pixels are treated as background
+            const isBackground = invert ? !isBright : isBright;
             
-            if (a < 50) {
-                // Keep purely transparent pixels
-                outData.data[i] = 255;
-                outData.data[i+1] = 255;
-                outData.data[i+2] = 255;
-                outData.data[i+3] = 0;
+            if (a < 50 || isBackground) {
+                // Fill with solid background color
+                outData.data[i] = bgR;
+                outData.data[i+1] = bgG;
+                outData.data[i+2] = bgB;
+                outData.data[i+3] = 255;
             } else {
-                outData.data[i] = outLum;
-                outData.data[i+1] = outLum;
-                outData.data[i+2] = outLum;
-                outData.data[i+3] = a;
+                // Monochrome processing for the logo
+                let outLum = invert ? (255 - luminance) : luminance;
+                let alphaFactor = a / 255.0; // Blend original transparent pixels neatly against the solid background
+                
+                outData.data[i] = Math.round((outLum * alphaFactor) + (bgR * (1 - alphaFactor)));
+                outData.data[i+1] = Math.round((outLum * alphaFactor) + (bgG * (1 - alphaFactor)));
+                outData.data[i+2] = Math.round((outLum * alphaFactor) + (bgB * (1 - alphaFactor)));
+                outData.data[i+3] = 255;
             }
         }
         

@@ -72,6 +72,22 @@
                             <p class="control-hint">iPhoneの丸みに完全に一致するようスライダーで微調整してください</p>
                         </div>
 
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="bg-color">背景色</label>
+                            </div>
+                            <input type="color" id="bg-color" value="#e0e0e0" style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="threshold">背景の判定ライン</label>
+                                <span id="threshold-val">128</span>
+                            </div>
+                            <input type="range" id="threshold" min="0" max="255" value="128" class="slider">
+                            <p class="control-hint">スライダーで「背景として塗りつぶす範囲」を調整してください</p>
+                        </div>
+
                         <div class="control-group row">
                             <label for="invert" class="toggle-label">色を反転 (白黒の切り替え)</label>
                             <label class="switch">
