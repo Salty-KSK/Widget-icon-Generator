@@ -73,10 +73,42 @@
                         </div>
 
                         <div class="control-group">
+                            <label class="toggle-label">背景モード</label>
+                            <div class="shape-selector">
+                                <label class="shape-option" style="padding: 8px;">
+                                    <input type="radio" name="bg-mode" value="color" checked>
+                                    <span>塗りつぶし</span>
+                                </label>
+                                <label class="shape-option" style="padding: 8px;">
+                                    <input type="radio" name="bg-mode" value="transparent">
+                                    <span>背景透過</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="bg-color-group">
                             <div class="control-header">
                                 <label for="bg-color">背景色</label>
                             </div>
                             <input type="color" id="bg-color" value="#e0e0e0" style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="toggle-label">マークの色（抽出部分）</label>
+                            <div class="shape-selector">
+                                <label class="shape-option" style="padding: 8px;">
+                                    <input type="radio" name="mark-color" value="grayscale" checked>
+                                    <span>モノクロ</span>
+                                </label>
+                                <label class="shape-option" style="padding: 8px;">
+                                    <input type="radio" name="mark-color" value="black">
+                                    <span>単色：黒</span>
+                                </label>
+                                <label class="shape-option" style="padding: 8px;">
+                                    <input type="radio" name="mark-color" value="white">
+                                    <span>単色：白</span>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="control-group">

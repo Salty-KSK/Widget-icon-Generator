@@ -16,7 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
         radiusSlider: document.getElementById('radius'),
         radiusVal: document.getElementById('radius-val'),
         radiusControlGroup: document.getElementById('radius-control-group'),
+        bgModeRadios: document.querySelectorAll('input[name="bg-mode"]'),
+        bgColorGroup: document.getElementById('bg-color-group'),
         bgColorPicker: document.getElementById('bg-color'),
+        markColorRadios: document.querySelectorAll('input[name="mark-color"]'),
         thresholdSlider: document.getElementById('threshold'),
         thresholdVal: document.getElementById('threshold-val'),
         invertToggle: document.getElementById('invert'),
@@ -133,8 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePreview();
     });
 
+    UI.bgModeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'transparent') {
+                UI.bgColorGroup.style.display = 'none';
+            } else {
+                UI.bgColorGroup.style.display = 'flex';
+            }
+            updatePreview();
+        });
+    });
+
     UI.bgColorPicker.addEventListener('input', updatePreview);
     
+    UI.markColorRadios.forEach(radio => {
+        radio.addEventListener('change', updatePreview);
+    });
+
     UI.thresholdSlider.addEventListener('input', (e) => {
         UI.thresholdVal.textContent = e.target.value;
         updatePreview();
@@ -151,6 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const invert = UI.invertToggle.checked;
         const shape = document.querySelector('input[name="shape"]:checked').value;
+        const bgMode = document.querySelector('input[name="bg-mode"]:checked').value;
+        const markColor = document.querySelector('input[name="mark-color"]:checked').value;
         const threshold = parseInt(UI.thresholdSlider.value, 10);
         
         // Background color parsing
@@ -181,20 +201,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const isBackground = invert ? !isBright : isBright;
             
             if (a < 50 || isBackground) {
-                // Fill with solid background color
-                outData.data[i] = bgR;
-                outData.data[i+1] = bgG;
-                outData.data[i+2] = bgB;
-                outData.data[i+3] = 255;
+                if (bgMode === 'transparent') {
+                    // Make pixels fully transparent
+                    outData.data[i] = 0;
+                    outData.data[i+1] = 0;
+                    outData.data[i+2] = 0;
+                    outData.data[i+3] = 0;
+                } else {
+                    // Fill with solid background color
+                    outData.data[i] = bgR;
+                    outData.data[i+1] = bgG;
+                    outData.data[i+2] = bgB;
+                    outData.data[i+3] = 255;
+                }
             } else {
-                // Monochrome processing for the logo
+                // Processing for the logo mark
                 let outLum = invert ? (255 - luminance) : luminance;
-                let alphaFactor = a / 255.0; // Blend original transparent pixels neatly against the solid background
                 
-                outData.data[i] = Math.round((outLum * alphaFactor) + (bgR * (1 - alphaFactor)));
-                outData.data[i+1] = Math.round((outLum * alphaFactor) + (bgG * (1 - alphaFactor)));
-                outData.data[i+2] = Math.round((outLum * alphaFactor) + (bgB * (1 - alphaFactor)));
-                outData.data[i+3] = 255;
+                let targetR, targetG, targetB;
+                if (markColor === 'black') {
+                    targetR = 0; targetG = 0; targetB = 0;
+                } else if (markColor === 'white') {
+                    targetR = 255; targetG = 255; targetB = 255;
+                } else {
+                    targetR = outLum; targetG = outLum; targetB = outLum;
+                }
+
+                if (bgMode === 'transparent') {
+                    outData.data[i] = targetR;
+                    outData.data[i+1] = targetG;
+                    outData.data[i+2] = targetB;
+                    outData.data[i+3] = a; // keep original alpha
+                } else {
+                    let alphaFactor = a / 255.0; // Blend original transparent pixels neatly against the solid background
+                    outData.data[i] = Math.round((targetR * alphaFactor) + (bgR * (1 - alphaFactor)));
+                    outData.data[i+1] = Math.round((targetG * alphaFactor) + (bgG * (1 - alphaFactor)));
+                    outData.data[i+2] = Math.round((targetB * alphaFactor) + (bgB * (1 - alphaFactor)));
+                    outData.data[i+3] = 255;
+                }
             }
         }
         
